@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36511.14 d17.14
+VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "NodeConsoleApp1", "NodeConsoleApp1\NodeConsoleApp1.esproj", "{B6653670-937A-FD82-8420-66A1C2390AED}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "srv", "srv\srv.esproj", "{B6653670-937A-FD82-8420-66A1C2390AED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
