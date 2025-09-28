@@ -1,4 +1,4 @@
 
-git commit -m "Rename solution file to NewName.sln"
 git add -A
+git commit -m "Rename solution file to NewName.sln"
 git push origin master --force
