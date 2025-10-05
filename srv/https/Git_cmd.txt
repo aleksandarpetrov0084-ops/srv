@@ -1,4 +1,4 @@
-
+git
 git add -A      // Staging all changes
 git commit -m "Rename solution file to NewName.sln" // Committing preparing to push	
 git push origin master --force // Pushing to remote repository overwrite

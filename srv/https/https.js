@@ -159,6 +159,32 @@ app.get('/api/logSessions', (req, res) => {
     res.json({ message: 'Active sessions logged' });
 });
 
+app.get('/api/test/:operation', (req, res) => {
+    try {
+        const { operation } = req.params;
+
+        // Example: decide operation
+        let query;
+        switch (operation) {
+            case 'add':
+                console.log("add");
+                query = 'SELECT 1 + 1 AS result';
+                break;
+            case 'multiply':
+                query = 'SELECT 2 * 3 AS result';
+                break;
+            default:
+                return res.status(400).json({ error: 'Unknown operation' });
+        }
+
+        const result = usersDb.prepare(query).get();
+        res.json(result);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'DB error' });
+    }
+});
+
 // 404 fallback
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
@@ -167,7 +193,7 @@ app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 // =======================
 (async () => {
     const httpsOptions = await getHttpsOptions();
-    https.createServer(httpsOptions, app).listen(443, () => {
+    https.createServer(httpsOptions, app).listen(443, '0.0.0.0', () => {
         console.log('HTTPS Express server running on port 443');
     });
 })();
