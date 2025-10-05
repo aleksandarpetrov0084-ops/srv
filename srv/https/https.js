@@ -167,7 +167,7 @@ app.get('/api/test/:operation', (req, res) => {
         let query;
         switch (operation) {
             case 'add':
-                console.log("add");
+                console.log("new add");
                 query = 'SELECT 1 + 1 AS result';
                 break;
             case 'multiply':
