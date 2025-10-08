@@ -8,7 +8,8 @@ import path from 'path';                     // Path utilities
 import session from 'express-session';       // Express session middleware
 import SQLiteStoreFactory from 'connect-sqlite3'; // SQLite session store factory
 import Database from 'better-sqlite3';       // SQLite driver with optional SQLCipher encryption
-
+import Stack from './stack.js'
+import Headers from './headers.js'
 // =======================
 // HTTPS options (async)
 // =======================
@@ -25,7 +26,7 @@ async function getHttpsOptions() {
 const app = express();
 app.use(express.json()); // Parse JSON request bodies
 
-// =======================
+// =======================import
 // SQLCipher encryption key
 // =======================
 const DB_PASSWORD = 'my-secret-password'; // Key to encrypt both users & sessions DB
@@ -125,26 +126,33 @@ app.use((req, res, next) => {
 function logActiveSessions() {
     sessionStore.db.all("SELECT * FROM sessions", [], (err, rows) => {
         if (err) return console.error("Error fetching sessions:", err);
-        console.log(`\nActive sessions (${rows.length}):`);
+        //console.log(`\nActive sessions (${rows.length}):`);
         for (const row of rows) {
             let sess = {};
             try { sess = JSON.parse(row.sess); } catch { }
-            console.log({
+           /* console.log({
                 sid: row.sid,                   // Session ID
                 lastAccess: sess.lastAccess,    // Last access timestamp
                 userId: sess.userId,            // User ID stored in session
                 role: sess.role,                // Role stored in session
                 cookie: sess.cookie || {}       // Cookie info stored in session
             });
+            */
         }
     });
 }
+
+const api_requests = new Stack()
 
 // =======================
 // Routes
 // =======================
 app.get('/api/users', (req, res) => {
     try {
+        const headers = new Headers(req.headers)
+        api_requests.push(headers.get('host'))
+        console.log(JSON.stringify(api_requests.pop(), null, 2));
+
         const users = usersDb.prepare('SELECT * FROM users').all(); // Fetch users
         logActiveSessions();                                        // Print session info
         res.json(users);
