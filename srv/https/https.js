@@ -145,7 +145,7 @@ function logActiveSessions() {
     });
 }
 // =======================
-// Initialize Queue and Processor
+// Initialize Queue and API Request Queue Processor
 // =======================
 const queue = new Queue()
 const qu_processor = new que_processor(queue) 
