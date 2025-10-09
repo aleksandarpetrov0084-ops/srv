@@ -8,13 +8,16 @@ import path from 'path';                     // Path utilities
 import session from 'express-session';       // Express session middleware
 import SQLiteStoreFactory from 'connect-sqlite3'; // SQLite session store factory
 import Database from 'better-sqlite3';       // SQLite driver with optional SQLCipher encryption
-import Stack from './stack.js'
+import Queue from './queue.js'
 import Headers from './headers.js'
+import { client } from './headers.js'
+import que_processor from './qu_processor.js'
 // =======================
 // HTTPS options (async)
 // =======================
 // Read SSL key and certificate files asynchronously
-async function getHttpsOptions() {
+
+ async function getHttpsOptions() {
     const key = await fs.readFile(path.join(process.cwd(), 'key', 'key.pem'));   // Private key
     const cert = await fs.readFile(path.join(process.cwd(), 'cert', 'cert.pem')); // Public cert
     return { key, cert };
@@ -141,17 +144,21 @@ function logActiveSessions() {
         }
     });
 }
-
-const api_requests = new Stack()
-
+// =======================
+// Initialize Queue and Processor
+// =======================
+const queue = new Queue()
+const qu_processor = new que_processor(queue) 
+qu_processor.start()
 // =======================
 // Routes
 // =======================
 app.get('/api/users', (req, res) => {
     try {
         const headers = new Headers(req.headers)
-        api_requests.push(headers.get('host'))
-        console.log(JSON.stringify(api_requests.pop(), null, 2));
+        queue.enqueue(headers)
+        console.log(queue.size())
+        //console.log(JSON.stringify(queue.dequeue(), null, 2));
 
         const users = usersDb.prepare('SELECT * FROM users').all(); // Fetch users
         logActiveSessions();                                        // Print session info
