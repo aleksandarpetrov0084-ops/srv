@@ -30,6 +30,7 @@ import que_processor from './qu_processor.js'
 (async () => {
     const httpsOptions = await getHttpsOptions();
     const server = http2.createSecureServer(httpsOptions);
+    const version = 'v1'
 
     server.on('stream', async (stream, headers) => {
         const reqPath = headers[':path'];
@@ -38,16 +39,16 @@ import que_processor from './qu_processor.js'
         try {
             // Example async operation (placeholder for DB query later)
             let responseData;
-
-            if (reqPath === '/api/users' && method === 'GET') {
+             
+            if (reqPath === '/api/' + version + '/users' && method === 'GET') {
                 // Placeholder async operation (simulating DB fetch)
                 responseData = await new Promise((resolve) =>
                     setTimeout(() => resolve([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]), 50)
                 );
-
                 stream.respond({ ':status': 200, 'content-type': 'application/json' });
                 stream.end(JSON.stringify(responseData));
-            } else if (reqPath === '/api/test' && method === 'GET') {
+
+            } else if (reqPath === '/api/' + version + '/test' && method === 'GET') {
                 responseData = await new Promise((resolve) =>
                     setTimeout(() => resolve({ message: 'Test endpoint works!' }), 50)
                 );
