@@ -4,7 +4,7 @@ import  Queue  from './queue.js';
 export default class qu_processor {
     #queue;
     #running;
-
+  
     constructor(queue) {
         if (!(queue instanceof Queue)) {
             throw new Error('qu_processor expects a Queue instance');

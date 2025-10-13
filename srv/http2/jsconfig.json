@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "typeAcquisition": {
+      "enable": true,
+      "include": [ "node" ]
+    }
+  },
+  "exclude": [ "node_modules" ]
+}
