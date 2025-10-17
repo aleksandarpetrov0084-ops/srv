@@ -1,4 +1,4 @@
-// @ts-nocheck
+ï»¿// @ts-nocheck
 // =======================
 // Required modules
 // =======================
@@ -47,46 +47,41 @@ import que_processor from './qu_processor.js'
         const method = headers[':method'];
         try {
             // Example async operation (placeholder for DB query later)
-            let responseData;            
+            let responseData;   
+            let sessHashedID;
             if (reqPath === '/api/' + version + '/users' && method === 'GET') {
                 //Create a hashed session ID from the headers
-                const sessHashedID = currentRequestHeadersHashed(JSON.stringify(headers));
-                //console.log(currentRequestHeadersHashed(JSON.stringify(headers)));
+                if (headers['cookie'] !== undefined) {
+                    const { cookie, ...headersWithoutCookie } = headers;
+                    sessHashedID = currentRequestHeadersHashed(JSON.stringify(headersWithoutCookie));
+                } // Here you have to put Else with a new method to create new session            
                 if (sessHashedID in active_sessions) {
-                    console.log('Key exists!'); 
+                    console.log("Existing session:", sessHashedID);
                     stream.respond({
                         ':status': 200,
                         'Content-Type': 'application/json',
                     });
-                    console.log(Object.keys(active_sessions).length);
-                    stream.end(JSON.stringify(sessHashedID));
+                    stream.end(JSON.stringify(headers['cookie']));
                 } else {
-
+                    // Here you have to put that new method to create new session with below   code
                     const token = jwt.sign(headers, secret, { expiresIn: '30m' });
-                    const cookie = {
-                        name: sessHashedID,
-                        token: token,
-                        maxAge: 30 * 60,       // in seconds
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: 'Lax',
-                        path: '/' + sessHashedID
-                    };
-                    active_sessions[sessHashedID] = cookie;
+                    const maxAge = 30 * 60; // seconds
+
+                    const cookies = [
+                        `sess=${sessHashedID}; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`,
+                        `token=${token}; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`,
+                    ];
+
+                   // console.log(cookies)
+                    active_sessions[sessHashedID] = cookies;
 
                     stream.respond({
                         ':status': 200,
                         'Content-Type': 'application/json',
-                        'Set-Cookie': cookie
+                        'Set-Cookie': cookies
                     });
-                    stream.end(JSON.stringify(cookie));
+                    stream.end(JSON.stringify({ sess: sessHashedID, token }));
                 }
-                // Placeholder async operation (simulating DB fetch)
-                //responseData = await new Promise((resolve) =>
-                //    setTimeout(() => resolve([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]), 50)
-                //);
-                //stream.respond({ ':status': 200, 'content-type': 'application/json' });
-                //stream.end(JSON.stringify(responseData));
             } else if (reqPath === '/api/' + version + '/test' && method === 'GET') {
                 responseData = await new Promise((resolve) =>
                     setTimeout(() => resolve({ message: 'Test endpoint works!' }), 50)
@@ -183,7 +178,7 @@ import que_processor from './qu_processor.js'
 //    store: sessionStore,                // Session store instance
 //    secret: 'my-secret-key',            // Secret for signing session ID cookie
 //    name: 'connect.sid',                // Cookie name used to store session ID
-//    resave: false,                      // Avoid saving session if it wasn’t modified
+//    resave: false,                      // Avoid saving session if it wasnâ€™t modified
 //    saveUninitialized: true,            // Save new sessions even if they are empty
 //    rolling: false,                     // Do not reset cookie expiration on every response
 //    unset: 'destroy',                   // Remove session from store when req.session = null
@@ -197,7 +192,7 @@ import que_processor from './qu_processor.js'
 //        path: '/',                        // Path for cookie
 //        signed: true,                    // Sign the cookie to detect tampering
 //        priority: 'medium',              // Cookie priority for browser (low, medium, high)
-//        overwrite: false,                // Don’t overwrite existing cookies
+//        overwrite: false,                // Donâ€™t overwrite existing cookies
 //        encode: String                   // Optional encoding function
 //    }
 //}));
