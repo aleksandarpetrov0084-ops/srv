@@ -50,20 +50,19 @@ import que_processor from './qu_processor.js'
             let responseData;   
             let sessHashedID;
             if (reqPath === '/api/' + version + '/users' && method === 'GET') {
-                //Create a hashed session ID from the headers
+   
                 if (headers['cookie'] !== undefined) {
+                    const token = headers['cookie'].split('token=')[1].split(';')[0];   
+
+                    console.log('Expiration (exp) claim:', jwt.decode(token).exp);
+                    console.log('Current Time (UTC):', Math.floor(Date.now() / 1000));
+                    console.log('Expiration Time (UTC):', jwt.decode(token).exp);
+
                     const { cookie, ...headersWithoutCookie } = headers;
                     sessHashedID = currentRequestHeadersHashed(JSON.stringify(headersWithoutCookie));
-                } // Here you have to put Else with a new method to create new session            
-                if (sessHashedID in active_sessions) {
-                    console.log("Existing session:", sessHashedID);
-                    stream.respond({
-                        ':status': 200,
-                        'Content-Type': 'application/json',
-                    });
                     stream.end(JSON.stringify(headers['cookie']));
                 } else {
-                    // Here you have to put that new method to create new session with below   code
+                    sessHashedID = currentRequestHeadersHashed(JSON.stringify(headers));
                     const token = jwt.sign(headers, secret, { expiresIn: '30m' });
                     const maxAge = 30 * 60; // seconds
 
@@ -72,7 +71,6 @@ import que_processor from './qu_processor.js'
                         `token=${token}; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`,
                     ];
 
-                   // console.log(cookies)
                     active_sessions[sessHashedID] = cookies;
 
                     stream.respond({
@@ -80,7 +78,7 @@ import que_processor from './qu_processor.js'
                         'Content-Type': 'application/json',
                         'Set-Cookie': cookies
                     });
-                    stream.end(JSON.stringify({ sess: sessHashedID, token }));
+                    stream.end(JSON.stringify( cookies ));
                 }
             } else if (reqPath === '/api/' + version + '/test' && method === 'GET') {
                 responseData = await new Promise((resolve) =>
