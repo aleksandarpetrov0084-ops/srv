@@ -8,10 +8,9 @@
 import http2 from  'node:http2';
 import fs from 'fs/promises';                // Async filesystem operations
 import path from 'path';                     // Path utilities
-import session from 'express-session';       // Express session middleware
-import SQLiteStoreFactory from 'connect-sqlite3'; // SQLite session store factory
-import Database from 'better-sqlite3';       // SQLite driver with optional SQLCipher encryption
-import Queue from './queue.js'
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import Queue from './queue.js' 
 import Headers from './headers.js'
 import { client } from './headers.js'
 import que_processor from './qu_processor.js'
@@ -19,38 +18,79 @@ import que_processor from './qu_processor.js'
 // HTTPS options (async)
 // =======================
 // Read SSL key and certificate files asynchronously
-
  async function getHttpsOptions() {
     const key = await fs.readFile(path.join(process.cwd(), 'key', 'key.pem'));   // Private key
     const cert = await fs.readFile(path.join(process.cwd(), 'cert', 'cert.pem')); // Public cert
     return { key, cert };
 }
 (async () => {
+    // DECLARE MOST STUFF HERE 
     const httpsOptions = await getHttpsOptions();
     const server = http2.createSecureServer(httpsOptions);
-    const version = 'v1'
-
+    const version = 'v1' 
+    const secret = 'supersecret';
+    const active_sessions = {};  
+    function currentRequestHeadersHashed(headers, hasher = 'sha512') {
+        switch (hasher) {
+            case 'sha256':
+                return crypto.createHash('sha256').update(headers).digest('hex');
+            case 'sha512':
+                return crypto.createHash('sha512').update(headers).digest('hex');
+            case 'hmac':
+                return crypto.createHmac('sha256', secret).update(headers).digest('hex');
+            default:
+                throw new Error(`Unknown hasher: ${hasher}`);
+        }
+    };
     server.on('stream', async (stream, headers) => {
         const reqPath = headers[':path'];
         const method = headers[':method'];
-        console.log(headers)
         try {
             // Example async operation (placeholder for DB query later)
-            let responseData;
-             
+            let responseData;            
             if (reqPath === '/api/' + version + '/users' && method === 'GET') {
-                // Placeholder async operation (simulating DB fetch)
-                responseData = await new Promise((resolve) =>
-                    setTimeout(() => resolve([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]), 50)
-                );
-                stream.respond({ ':status': 200, 'content-type': 'application/json' });
-                stream.end(JSON.stringify(responseData));
+                //Create a hashed session ID from the headers
+                const sessHashedID = currentRequestHeadersHashed(JSON.stringify(headers));
+                //console.log(currentRequestHeadersHashed(JSON.stringify(headers)));
+                if (sessHashedID in active_sessions) {
+                    console.log('Key exists!'); 
+                    stream.respond({
+                        ':status': 200,
+                        'Content-Type': 'application/json',
+                    });
+                    console.log(Object.keys(active_sessions).length);
+                    stream.end(JSON.stringify(sessHashedID));
+                } else {
 
+                    const token = jwt.sign(headers, secret, { expiresIn: '30m' });
+                    const cookie = {
+                        name: sessHashedID,
+                        token: token,
+                        maxAge: 30 * 60,       // in seconds
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'Lax',
+                        path: '/' + sessHashedID
+                    };
+                    active_sessions[sessHashedID] = cookie;
+
+                    stream.respond({
+                        ':status': 200,
+                        'Content-Type': 'application/json',
+                        'Set-Cookie': cookie
+                    });
+                    stream.end(JSON.stringify(cookie));
+                }
+                // Placeholder async operation (simulating DB fetch)
+                //responseData = await new Promise((resolve) =>
+                //    setTimeout(() => resolve([{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]), 50)
+                //);
+                //stream.respond({ ':status': 200, 'content-type': 'application/json' });
+                //stream.end(JSON.stringify(responseData));
             } else if (reqPath === '/api/' + version + '/test' && method === 'GET') {
                 responseData = await new Promise((resolve) =>
                     setTimeout(() => resolve({ message: 'Test endpoint works!' }), 50)
                 );
-
                 stream.respond({ ':status': 200, 'content-type': 'application/json' });
                 stream.end(JSON.stringify(responseData));
             } else {
