@@ -2,8 +2,10 @@ import { parentPort } from 'node:worker_threads';
 import http2 from 'node:http2';
 import { currentRequestHeadersHashed, getHttpsOptions, getCookie, tokenMatch } from './http2_helper.js';
 import jwt from 'jsonwebtoken';
+import Msg from './msg.js';
 
-parentPort.on('message', (data) => {
+parentPort.on('message', (msg) => {
+
     console.log('HTTP2 received:', data);
 });
   
@@ -44,18 +46,21 @@ parentPort.on('message', (data) => {
             const in_token = getCookie(c || '', IDtoken_cookie_name);
             const in_AuthToken = getCookie(c || '', AuthToken_cookie_name);
             if (!in_token || !in_sessID || !in_AuthToken) {
-                parentPort.postMessage("processCookies method")
+                const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Missing cookies', 'data', true, 'action')      
+                msg.send()  
                 stream.end(JSON.stringify(headers['cookie']))
                 return;
             } else {
                 if (active_sessions[in_sessID] && tokenMatch(in_token, getCookie(JSON.stringify(active_sessions[in_sessID]), IDtoken_cookie_name))) {
                     // If exist test
-                 
-                    parentPort.postMessage("In acive sessions")
+                    const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'In acive sessions', 'data', true, 'action')
+                    msg.send()  
                     console.log('Expiration (exp) claim:', jwt.decode(in_token.toString('utf8')).exp)
                     console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
                 } else {              
-                    parentPort.postMessage("Has cookies and not in acive sessions")
+
+                    const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Has cookies and not in acive sessions', 'data', true, 'action')
+                    msg.send() 
                 }
                 stream.end(JSON.stringify(headers['cookie']))
                 return;
@@ -80,10 +85,12 @@ parentPort.on('message', (data) => {
                 'Set-Cookie': out_cookies
             });
         
-            parentPort.postMessage("Cookies created")
+            const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Cookies created', 'data', true, 'action')
+            msg.send() 
             stream.end(JSON.stringify(out_cookies))
             return;
         }
+
         Route(headers);    
     })
     server.listen(443, '0.0.0.0', () => {

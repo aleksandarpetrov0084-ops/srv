@@ -1,6 +1,6 @@
 // req_pro.js
 import Msgs  from './msgs.js';
-
+import Msg from './msg.js';
 export default class Msgs_pro {
     #queue;
     #running;
@@ -19,6 +19,7 @@ export default class Msgs_pro {
             do {
                 if (!this.#queue.isEmpty()) {
                     const item = this.#queue.dequeue();
+                    const m = Msg.fromJSON(item)
                     // Process item (example implementation)
                     console.log('Request processed by msgs_pro:', item);
                     // Simulate async processing
