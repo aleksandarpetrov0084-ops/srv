@@ -1,9 +1,8 @@
-
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';  
 
-export  function currentRequestHeadersHashed(headers, hasher = 'sha512') {
+export function currentRequestHeadersHashed(headers, secret, hasher = 'sha512') {
     switch (hasher) {
         case 'sha256':
             return crypto.createHash('sha256').update(headers).digest('hex');
