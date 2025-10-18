@@ -1,13 +1,13 @@
-// qu_processor.js
-import  Queue  from './queue.js';
+// req_pro.js
+import Req  from './req.js';
 
-export default class qu_processor {
+export default class ReqPro {
     #queue;
     #running;
   
     constructor(queue) {
-        if (!(queue instanceof Queue)) {
-            throw new Error('qu_processor expects a Queue instance');
+        if (!(queue instanceof Req)) {
+            throw new Error('ReqPro expects a Req instance');
         }
         this.#queue = queue;
         this.#running = false;

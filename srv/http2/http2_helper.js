@@ -22,3 +22,24 @@ export async function getHttpsOptions() {
 }
 
 
+export function getCookie(in_cookies, cookie_name) {
+    if (in_cookies.includes(cookie_name + '=')) {
+        return in_cookies.split(cookie_name + '=')[1].split(';')[0];
+    }
+    if (in_cookies.includes(cookie_name + '=')) {
+        return in_cookies.split(cookie_name + '=')[1].split(';')[0];
+    }
+}
+
+export function tokenMatch(in_token, existing_token) {
+    if (in_token === existing_token) {
+
+        return true;
+
+    } else {
+
+        return false;
+    }
+
+}
+

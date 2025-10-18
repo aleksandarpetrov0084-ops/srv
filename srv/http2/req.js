@@ -1,5 +1,5 @@
-// queue.js
- class Queue {
+// Req.js
+ class Req {
     #items; // private field
 
     constructor() {
@@ -35,4 +35,4 @@
          return this.#items.length; // number of items currently in the queue
      }
 }
-export default Queue
+export default Req
