@@ -50,11 +50,13 @@ worker.on('message', (msg) => console.log('Main received:', msg)); // Listen for
                 return;
             } else {
                 if (active_sessions[in_sessID] && tokenMatch(in_token, getCookie(JSON.stringify(active_sessions[in_sessID]), IDtoken_cookie_name))) {
-                    // console.log(in_token, getCookie(JSON.stringify(active_sessions[in_sessID]), IDtoken_cookie_name))
+                    // If exist test
                     worker.postMessage("In acive sessions");
                     console.log('Expiration (exp) claim:', jwt.decode(in_token.toString('utf8')).exp)
                     console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
-                    
+
+                } else {
+                    worker.postMessage("Has cookies and not in acive sessions");
                 }
                 stream.end(JSON.stringify(headers['cookie']))
                 return;
@@ -78,6 +80,7 @@ worker.on('message', (msg) => console.log('Main received:', msg)); // Listen for
                 'Content-Type': 'application/json',
                 'Set-Cookie': out_cookies
             });
+            worker.postMessage("Cookies created");
             stream.end(JSON.stringify(out_cookies))
             return;
         }
