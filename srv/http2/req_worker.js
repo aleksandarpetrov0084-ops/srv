@@ -7,11 +7,11 @@ const req_pro = new ReqPro(req);
 req_pro.start();
 
 parentPort.on('message', (data) => {
-    console.log('Worker received:', data);
+    console.log('REQWorker received');
     const previous = req.size();
     req.enqueue(data);
     const current = req.size();
-  
+    console.log('REQWorker sends'); 
     parentPort.postMessage(data)
 
 });
