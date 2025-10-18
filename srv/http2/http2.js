@@ -8,30 +8,47 @@ import jwt from 'jsonwebtoken';
     const httpsOptions = await getHttpsOptions()
     const server = http2.createSecureServer(httpsOptions)
     const version = 'v1' 
-    const secret = 'supersecret'
-    const active_sessions = {} 
-
+    const secret = 'supersecret' //token and HMAC secret
+    const active_sessions = {} //Incoming requests
+    let sessID;          //Incoming cookie
+    let token;           //Incoming cookie
+    let sessHashedID;
+    let responseData;   // dummy variable
+    let reqPath;
+    let method;
+    let cookies;       // incoming cookies
     server.on('stream', async (stream, headers) => {
-        const reqPath = headers[':path']
-        const method = headers[':method']
-        try {         
-            let responseData;   
-            let sessHashedID;
+         reqPath = headers[':path']
+         method = headers[':method']      
             if (reqPath === '/api/' + version + '/users' && method === 'GET') {
-   
-                if (headers['cookie'] !== undefined) {
-                    const token = headers['cookie'].split('token=')[1].split(';')[0]   
-                    const sess = headers['cookie'].split('sess=')[1].split(';')[0]  
-                    console.log('Session ID from cookie:', sess)
-                    //Find and Test tokenExists & tokenExpired sessionExists in activesession
-                    console.log('Expiration (exp) claim:', jwt.decode(token).exp)
-                    console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
-                    const { cookie, ...headersWithoutCookie } = headers
-                    sessHashedID = currentRequestHeadersHashed(JSON.stringify(headersWithoutCookie), secret)
-                    stream.end(JSON.stringify(headers['cookie']))
-
+                //If cookie is not empty try to extract token & sessID and test if empty
+                if (headers['cookie'] !== undefined) {                   
+                    token = null;
+                    sessID = null;
+                    cookies = null;
+                    cookies = headers['cookie'] || '';
+                    if (cookies.includes('token=')) {
+                        token = cookies.split('token=')[1].split(';')[0];
+                    }
+                    if (cookies.includes('sess=')) {
+                        sessID = cookies.split('sess=')[1].split(';')[0];
+                    }
+                    if (!token || !sessID) {
+                        console.log("Missing token or session ID");
+                        stream.end(JSON.stringify(headers['cookie']))
+                        // handle unauthorized / missing cookies case here
+                    } else {
+                        console.log("Token:", token);
+                        console.log("Session ID:", sessID);
+                        //Find and Test tokenExists & tokenExpired & sessionExists in activesession
+                        //onsole.log('Expiration (exp) claim:', jwt.decode(token).exp)
+                      console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
+       //        const { cookie, ...headersWithoutCookie } = headers
+                     // sessHashedID = currentRequestHeadersHashed(JSON.stringify(headersWithoutCookie), secret)
+                        stream.end(JSON.stringify(headers['cookie']))
+                    }
                 } else {
-
+                    // Create token and cookie and send them back
                     sessHashedID = currentRequestHeadersHashed(JSON.stringify(headers), secret)
                     const token = jwt.sign(headers, secret, { expiresIn: '30m' })
                     const maxAge = 30 * 60 // seconds
@@ -49,6 +66,7 @@ import jwt from 'jsonwebtoken';
                     });
                     stream.end(JSON.stringify( cookies ))
                 }
+                // More API endpoints can be added here
             } else if (reqPath === '/api/' + version + '/test' && method === 'GET') {
                 responseData = await new Promise((resolve) =>
                     setTimeout(() => resolve({ message: 'Test endpoint works!' }), 50)
@@ -59,11 +77,7 @@ import jwt from 'jsonwebtoken';
                 stream.respond({ ':status': 404 })
                 stream.end(JSON.stringify({ error: 'Not found' }))
             }
-        } catch (err) {
-            console.error('Request error:', err);
-            stream.respond({ ':status': 500, 'content-type': 'application/json' });
-            stream.end(JSON.stringify({ error: 'Internal server error' }));
-        }
+
     })
 
     server.listen(443, '0.0.0.0', () => {
