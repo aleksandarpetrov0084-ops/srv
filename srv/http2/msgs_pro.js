@@ -1,13 +1,13 @@
 // req_pro.js
-import Req  from './req.js';
+import Msgs  from './msgs.js';
 
-export default class ReqPro {
+export default class Msgs_pro {
     #queue;
     #running;
   
     constructor(queue) {
-        if (!(queue instanceof Req)) {
-            throw new Error('ReqPro expects a Req instance');
+        if (!(queue instanceof Msgs)) {
+            throw new Error('ReqPro expects a Msgs instance');
         }
         this.#queue = queue;
         this.#running = false;
@@ -20,7 +20,7 @@ export default class ReqPro {
                 if (!this.#queue.isEmpty()) {
                     const item = this.#queue.dequeue();
                     // Process item (example implementation)
-                    console.log('Processing:', item);
+                    console.log('Request processed by msgs_pro:', item);
                     // Simulate async processing
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } else {
