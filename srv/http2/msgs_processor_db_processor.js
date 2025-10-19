@@ -1,9 +1,7 @@
-// req_pro.js
+
 import Msgs from './msgs.js';
 import Msg from './msg.js';
-import { parentPort } from 'node:worker_threads';
-import jwt from 'jsonwebtoken';
-export default class CryptoProcessor {
+export default class MsgsDBProcessor {
     #queue;
     #running;
 
@@ -23,10 +21,8 @@ export default class CryptoProcessor {
                     const item = this.#queue.dequeue();
                     const m = Msg.fromJSON(item)
                     // Process item (example implementation)
-                    console.log('Request processed by crypto_pro:');
+                    console.log('Request processed by msgs_processor_db:');
                     console.log(m.toJSON());
-                    const token = jwt.sign(item, 'top secret', { expiresIn: '30m' })                    
-                    parentPort.postMessage(token)
                     // Simulate async processing
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } else {
@@ -44,3 +40,5 @@ export default class CryptoProcessor {
         this.#running = false;
     }
 }
+
+

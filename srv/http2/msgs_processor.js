@@ -1,7 +1,11 @@
-// req_pro.js
+// msgs_processor.js
 import Msgs  from './msgs.js';
 import Msg from './msg.js';
-export default class Msgs_pro {
+import { Worker } from 'node:worker_threads';
+
+const msgs_processor_db = new Worker('./msgs_processor_db_worker.js');
+
+export default class MsgsProcessor {
     #queue;
     #running;
   
@@ -23,6 +27,8 @@ export default class Msgs_pro {
                     // Process item (example implementation)
                     console.log('Request processed by msgs_pro:');
                     console.log(m.toJSON());
+                    console.log('Request send to msgs_processor_db:');
+                    msgs_processor_db.postMessage(item);
                     // Simulate async processing
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } else {

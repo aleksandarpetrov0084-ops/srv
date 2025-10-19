@@ -1,10 +1,10 @@
 import { parentPort } from 'node:worker_threads';
-import Msgs_pro from './crypto_processor.js';
+import CryptoProcessor from './crypto_processor.js';
 import Msgs from './msgs.js';
 import Msg from './msg.js';
 
 const crypto_msgs = new Msgs()
-const crypto_msgs_processor = new Msgs_pro(crypto_msgs);
+const crypto_msgs_processor = new CryptoProcessor(crypto_msgs);
 crypto_msgs_processor.start();
 
 parentPort.on('message', (msg) => {

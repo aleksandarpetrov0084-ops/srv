@@ -2,3 +2,16 @@
 
 // Each processor to have his own log_processor and log_worker processor for read/write logs to sqlite db
 // Think there has to be a db_processor , db_worker and db that will be spined off the msg_processor
+
+
+Classes to create:
+Templates
+
+wrkr_type
+wrkr_type_service
+
+
+msgs_processor_db   a worker to handle db read/writes belongs to msgs_processor
+- rules how to handle each type of message, in msgs_processor instance for switch case with methods
+- you pass in the message and it is taken care of it
+crypto_processor_db   a worker to handle db read/writes belongs to msgs_processor
