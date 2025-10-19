@@ -9,8 +9,6 @@ import { Worker } from 'node:worker_threads';
 
 const crypto_worker = new Worker('./crypto_worker.js');
 
-
-  
 (async () => {
     const httpsOptions = await getHttpsOptions()
     const server = http2.createSecureServer(httpsOptions)
@@ -61,7 +59,7 @@ const crypto_worker = new Worker('./crypto_worker.js');
                     console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
                 } else {              
 
-                    const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Has cookies and not in acive sessions', h[':path'], true, 'action')
+                    const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Has cookies and not in acive sessions', headers[':path'], true, 'action')
                     msg.send() 
                 }
                 stream.end(JSON.stringify(headers['cookie']))
