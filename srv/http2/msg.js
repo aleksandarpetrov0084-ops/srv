@@ -44,7 +44,7 @@ class Msg {
             throw new TypeError('Invalid object for Msg.fromJSON');
         }
         const { time, type, user, message, data, isAction, action } = obj;
-        return new Msg(time, type, user, message, data, isAction, action);
+        return new Msg(time, 'static', user, message, data, isAction, action);
     }
 }
 

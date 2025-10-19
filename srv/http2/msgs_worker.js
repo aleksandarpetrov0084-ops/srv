@@ -1,5 +1,5 @@
 import { parentPort } from 'node:worker_threads';
-import Msgs_pro from './msgs_pro.js';
+import Msgs_pro from './msgs_processor.js';
 import Msgs from './msgs.js';
 import Msg from './msg.js';
 
