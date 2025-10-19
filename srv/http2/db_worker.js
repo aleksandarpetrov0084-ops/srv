@@ -1,17 +1,20 @@
-import { parentPort } from 'node:worker_threads';
 import Msgs from './msgs.js';
-import Msg from './msg.js';
-import DBProcessor from './db_processor.js';
+import Worker from './worker.js';
+import Processor from './processor.js';
+
+class DBWorker extends Worker {
+
+}
+class DBProcessor extends Processor {
+
+    do(msg) {
+        console.log('DBProcessor processing message:', msg);
+    
+        return this.setResult('Processed');
+    }
+}
 
 const msgs = new Msgs()
-const db_processor = new DBProcessor(msgs);
-db_processor.start();
-
-parentPort.on('message', (msg) => {
-    const m = Msg.fromJSON(msg)
-    console.log('Message received by db_processor:' + msg);
-
-    msgs.enqueue(msg);
-
-    console.log('Message enqueued for db_processor' + msg);
-});
+const processor = new DBProcessor('DBProcessor', msgs);
+const db_worker = new DBWorker(processor);
+db_worker.start();

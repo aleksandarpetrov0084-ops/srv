@@ -1,19 +1,21 @@
-import { parentPort } from 'node:worker_threads';
-import CryptoProcessor from './crypto_processor.js';
 import Msgs from './msgs.js';
-import Msg from './msg.js';
+import Worker from './worker.js';
+import Processor from './processor.js';
+import jwt from 'jsonwebtoken';
+class CryptoWorker extends Worker {
 
-const crypto_msgs = new Msgs()
-const crypto_msgs_processor = new CryptoProcessor(crypto_msgs);
-crypto_msgs_processor.start();
+}
+class CryptoProcessor extends Processor {
 
-parentPort.on('message', (msg) => {
-    // Crypto messages received from http2_worker
-    const m = Msg.fromJSON(msg)
-    console.log('Message received by crypto_msg_worker:' + msg);
+    do(msg) {
+        console.log('CryptoProcessor processing message:', msg);
+        return this.setResult(jwt.sign(msg, 'top secret', { expiresIn: '30m' }))
+       
+    }
 
-    crypto_msgs.enqueue(msg);
+}
 
-    console.log('Message enqueued for crypto_msgs_pro' + msg);
-
-});
+const msgs = new Msgs()
+const processor = new CryptoProcessor('CryptoProcessor', msgs);
+const crypto_worker = new CryptoWorker(processor);
+crypto_worker.start();

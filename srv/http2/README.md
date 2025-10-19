@@ -1,5 +1,5 @@
-# This is my first https server
-Main idea is to have a server that is really configurable and modular
+# This is my first http2 server
+Main idea is to have very moduler non blockin http2 server that handles request in message fashion
 
 Iniating client connection
 | Phase                 | Protocol      | Example Packet Types               |
@@ -13,10 +13,17 @@ Iniating client connection
 
 Start-Process node -ArgumentList "https.js" starts seever in a seperate window
 
-wrkr_type
-wrkr_type_service
+wrkr_type 
+-> means passing Msg to workers for processing
+WORKER -> PROCESSOR -> RULES/HANDLERS normal structure
+WORKER -> PROCESSOR -> RULES/HANDLERS -> WORKER -> PROCESSOR -> RULES/HANDLERS   Can have other workers with their own processor logic 
+1. Type worker 
+- initialize processor, pass it a msgs queue and you listen for msgs. 
+- Every worker has a logger.
+- Can have other workers with their own processor logic 
+2. Type processor 
+- is where you process the msgs based on rules or handlers (you pass the mesage and it routes it)
+- Every proecssor can have other worker with their own processor logic
+- You dont need a logger here 
 
-msgs_processor_db   a worker to handle db read/writes belongs to msgs_processor
-- rules how to handle each type of message, in msgs_processor instance for switch case with methods
-- you pass in the message and it is taken care of it
-crypto_processor_db   a worker to handle db read/writes belongs to msgs_processor
+wrkr_type_service

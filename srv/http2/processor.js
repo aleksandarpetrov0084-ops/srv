@@ -1,20 +1,33 @@
-
+//// msgs_processor.js
 import Msgs from './msgs.js';
 import Msg from './msg.js';
+import { parentPort } from 'node:worker_threads';
 
-
-export default class DBProcessor {
+export default class Processor {
     #queue;
     #running;
+    #name
+    #result
+    #msg
+    constructor(name, queue) {
 
-    constructor(queue) {
         if (!(queue instanceof Msgs)) {
-            throw new Error('ReqPro expects a Msgs instance');
+            throw new Error('Processor expects a Msgs instance');
         }
         this.#queue = queue;
         this.#running = false;
+        this.#name = name  
     }
+    do(msg) {
+       
+    }
+    setResult(result) { this.#result = result }
 
+
+    sendResult() { parentPort.postMessage(this.#result); return }
+    getname() { return this.#name }
+
+    getMsgs() { return this.#queue }    
     async start() {
         this.#running = true;
         try {
@@ -23,8 +36,8 @@ export default class DBProcessor {
                     const item = this.#queue.dequeue();
                     const m = Msg.fromJSON(item)
                     // Process item (example implementation)
-                    console.log('Request processed by msgs_processor_db:');
-                    console.log(m.toJSON());
+                    this.do(item)
+                    this.sendResult()
                     // Simulate async processing
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } else {
@@ -42,5 +55,3 @@ export default class DBProcessor {
         this.#running = false;
     }
 }
-
-

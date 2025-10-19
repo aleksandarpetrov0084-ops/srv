@@ -54,7 +54,7 @@ const crypto_worker = new Worker('./crypto_worker.js');
                     // If exist test
                     const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'In acive sessions', headers[':path'], true, 'action')
                     msg.send()  
-                    console.log('Expiration (exp) claim:', jwt.decode(in_token.toString('utf8')).exp)
+                   // console.log('Expiration (exp) claim:', jwt.decode(in_token.toString('utf8')).exp)
                     console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
                 } else {              
 
