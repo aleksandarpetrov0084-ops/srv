@@ -1,0 +1,4 @@
+
+
+// Each processor to have his own log_processor and log_worker processor for read/write logs to sqlite db
+// Think there has to be a db_processor , db_worker and db that will be spined off the msg_processor

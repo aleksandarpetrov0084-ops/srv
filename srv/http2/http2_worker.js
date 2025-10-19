@@ -1,4 +1,3 @@
-
 import http2 from 'node:http2';
 import { currentRequestHeadersHashed, getHttpsOptions, getCookie, tokenMatch } from './http2_helper.js';
 import jwt from 'jsonwebtoken';

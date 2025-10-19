@@ -8,6 +8,7 @@ const crypto_msgs_processor = new Msgs_pro(crypto_msgs);
 crypto_msgs_processor.start();
 
 parentPort.on('message', (msg) => {
+    // Crypto messages received from http2_worker
     const m = Msg.fromJSON(msg)
     console.log('Message received by crypto_msg_worker:' + msg);
 
