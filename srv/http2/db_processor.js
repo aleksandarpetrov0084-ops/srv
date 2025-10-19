@@ -1,7 +1,9 @@
 
 import Msgs from './msgs.js';
 import Msg from './msg.js';
-export default class MsgsDBProcessor {
+
+
+export default class DBProcessor {
     #queue;
     #running;
 

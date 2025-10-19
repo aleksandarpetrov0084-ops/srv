@@ -3,7 +3,7 @@ import Msgs  from './msgs.js';
 import Msg from './msg.js';
 import { Worker } from 'node:worker_threads';
 
-const msgs_processor_db = new Worker('./msgs_processor_db_worker.js');
+const msgs_processor_db = new Worker('./db_worker.js');
 
 export default class MsgsProcessor {
     #queue;
