@@ -14,5 +14,6 @@ parentPort.on('message', (msg) => {
     msgs.enqueue(msg);
 
     console.log('Message enqueued for msgs_pro' + msg); 
-
+    //
+    console.log("")
 });
