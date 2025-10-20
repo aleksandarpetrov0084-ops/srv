@@ -1,21 +1,26 @@
 
 import Msgs from './msgs.js';
-import Worker from './worker.js';
+import Wrkr from './worker.js';
 import Processor from './processor.js';
-
-class MsgsWorker extends Worker 
-{
-
-
-}
+import { parentPort } from 'node:worker_threads';
+class MsgsWorker extends Wrkr {}
 
 class MsgsProcessor extends Processor {
-    do(msg) {
-        console.log('MsgsProcessor processing message:', msg);
-        return this.setResult('Processed')
-    }
 
-}
+
+    async do(msg) {
+        return await new Promise(resolve => {
+            this.setResult(null)
+            console.log('MsgsProcessor processing message:', msg);
+            this.setResult("Processed")           
+             setImmediate(() => {              
+                resolve();
+            });
+        });
+    } 
+}     
+
+
 const msgs = new Msgs();
 const processor = new MsgsProcessor('MsgsProcessor', msgs);
 const msgs_worker = new MsgsWorker(processor);

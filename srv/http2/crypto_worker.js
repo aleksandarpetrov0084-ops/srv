@@ -1,18 +1,22 @@
 import Msgs from './msgs.js';
-import Worker from './worker.js';
+import Wrkr from './worker.js';
 import Processor from './processor.js';
 import jwt from 'jsonwebtoken';
-class CryptoWorker extends Worker {
+export class CryptoWorker extends Wrkr {
 
 }
 class CryptoProcessor extends Processor {
 
-    do(msg) {
-        console.log('CryptoProcessor processing message:', msg);
-        return this.setResult(jwt.sign(msg, 'top secret', { expiresIn: '30m' }))
-       
+    async do(msg) {
+        return await new Promise(resolve => {
+            console.log('CryptoProcessor processing message:', msg);
+            console.log('Sending result...');
+            setImmediate(() => {
+                this.setResult(jwt.sign(msg, 'top secret', { expiresIn: '30m' }))
+                resolve();
+            });
+        });
     }
-
 }
 
 const msgs = new Msgs()

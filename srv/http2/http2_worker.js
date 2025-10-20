@@ -1,10 +1,8 @@
 import http2 from 'node:http2';
 import { currentRequestHeadersHashed, getHttpsOptions, getCookie, tokenMatch } from './http2_helper.js';
-import jwt from 'jsonwebtoken';
 import Msg from './msg.js';
 // @ts-nocheck
 import { Worker } from 'node:worker_threads';
-
 
 const crypto_worker = new Worker('./crypto_worker.js');
 
@@ -69,7 +67,7 @@ const crypto_worker = new Worker('./crypto_worker.js');
       async  function createCookies() {
             console.log("createCookies method")
             const out_sessID = currentRequestHeadersHashed(JSON.stringify(headers), secret)
-          const msga = new Msg(Math.floor(Date.now() / 1000), 'crypto', 'admin', 'Create token', headers[':path'], true, 'action')
+            const msga = new Msg(Math.floor(Date.now() / 1000), 'crypto', 'admin', 'Create token', headers[':path'], true, 'action')
           //  crypto_worker.postMessage(msga.toJSON())
 
             const workerResponse = await new Promise((resolve, reject) => {

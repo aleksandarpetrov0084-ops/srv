@@ -4,53 +4,52 @@ import Msg from './msg.js';
 import { parentPort } from 'node:worker_threads';
 
 export default class Processor {
-    #queue;
+    #msgs;
     #running;
     #name
     #result
-    #msg
-    constructor(name, queue) {
-
-        if (!(queue instanceof Msgs)) {
+    constructor(name, msgs) {
+        if (!(msgs instanceof Msgs)) {
             throw new Error('Processor expects a Msgs instance');
         }
-        this.#queue = queue;
+        this.#msgs = msgs;
         this.#running = false;
         this.#name = name  
     }
-    do(msg) {
-       
+    setResult(result) {
+        this.#result = result;
     }
-    setResult(result) { this.#result = result }
 
-
-    sendResult() { parentPort.postMessage(this.#result); return }
-    getname() { return this.#name }
-
-    getMsgs() { return this.#queue }    
+  async #sendResult () {
+    return await new Promise(resolve => {
+        console.log('Sending result...');
+        setImmediate(() => {   
+          ;
+            resolve();
+        }) ;
+    }).then(parentPort.postMessage(this.#result));
+}
+    enque(msg) {
+        this.#msgs.enqueue(msg)
+    }    
+    getName() {
+        return this.#msgs
+    }
     async start() {
         this.#running = true;
-        try {
             do {
-                if (!this.#queue.isEmpty()) {
-                    const item = this.#queue.dequeue();
+                if (!this.#msgs.isEmpty()) {
+                    const item = this.#msgs.dequeue();
                     const m = Msg.fromJSON(item)
-                    // Process item (example implementation)
-                    this.do(item)
-                    this.sendResult()
-                    // Simulate async processing
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    console.log(this.#name ,'is preparing to process')
+                    await this.do(item)    
+                    await this.#sendResult()
                 } else {
-                    // Wait 1 second if queue is empty
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    // Wait 1 second if msgs is empty
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                 }
             } while (this.#running);
-        } catch (error) {
-            console.error('Error in processor:', error);
-            this.#running = false;
-        }
     }
-
     stop() {
         this.#running = false;
     }

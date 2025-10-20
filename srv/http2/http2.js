@@ -1,6 +1,5 @@
-﻿// @ts-nocheck
+﻿import Msg from './msg.js';
 import { Worker } from 'node:worker_threads';
-import Msg from './msg.js';
 
 const msgs_worker = new Worker('./msgs_worker.js');
 const http2_worker = new Worker('./http2_worker.js');
@@ -16,5 +15,6 @@ http2_worker.on('message', (msg) => {
 msgs_worker.on('message', (msg) => {
     // Processed messages
     console.log('Message from msgs_worker ' + msg);
-    http2_worker.postMessage(msg); // this last one goes into 
+  //  http2_worker.postMessage(msg); // this last one goes into 
 })
+
