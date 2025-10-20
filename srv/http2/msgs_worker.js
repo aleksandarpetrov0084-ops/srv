@@ -10,12 +10,14 @@ class MsgsProcessor extends Processor {
 
     async do(msg) {
         return await new Promise(resolve => {
-            this.setResult(null)
-            console.log('MsgsProcessor processing message:', msg);
-            this.setResult("Processed")           
-             setImmediate(() => {              
-                resolve();
-            });
+
+            this.setResult(() => {
+              //  this.setResult(null)  // only this runs first      
+                console.log('MsgsProcessor processing message:', msg);
+                //setImmediate(() => {
+              return  resolve();
+                //});
+            })   // only this runs first        
         });
     } 
 }     
