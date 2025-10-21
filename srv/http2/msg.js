@@ -24,10 +24,26 @@ class Msg {
      action() { return this.#action; }
      user() { return this.#user; }   
      data() { return this.#data; }   
-     message() { return this.#message; }
+    message() { return this.#message; }
+
     send() {
-        parentPort.postMessage(this.toJSON());
+      
+        if (typeof parentPort !== 'undefined' && parentPort) {
+            // Worker Thread
+            parentPort.postMessage(this);
+        } else if (typeof process !== 'undefined' && process.send) {
+            // Forked child process
+            try {
+                process.send(this);
+            } catch (err) {
+                console.warn('Cannot send message, IPC channel closed:', err.message);
+            }
+        } else {
+            // fallback if no messaging is available
+            console.log('Msg.send fallback (no IPC):', this);
+        }
     }
+
      toJSON() {
         return {
             time: this.#time,

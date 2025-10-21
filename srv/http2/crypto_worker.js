@@ -8,16 +8,17 @@ export class CryptoWorker extends Wrkr {
 class CryptoProcessor extends Processor {
 
     async do(msg) {
-        return await new Promise(resolve => {
+
             console.log('CryptoProcessor processing message:', msg);
             console.log('Sending result...');
-            setImmediate(() => {
-                this.setResult(jwt.sign(msg, 'top secret', { expiresIn: '30m' }))
-                resolve();
-            });
-        });
+  
+            this.setResult(
+                jwt.sign({ data: 'payload' }, 'top secret', { expiresIn: '30m' })
+            );
+
+        };
     }
-}
+
 
 const msgs = new Msgs()
 const processor = new CryptoProcessor('CryptoProcessor', msgs);

@@ -1,3 +1,4 @@
+//http2_worker.js
 import http2 from 'node:http2';
 import { currentRequestHeadersHashed, getHttpsOptions, getCookie, tokenMatch } from './http2_helper.js';
 import Msg from './msg.js';
@@ -65,11 +66,13 @@ const crypto_worker = new Worker('./crypto_worker.js');
         }
 
       async  function createCookies() {
-            console.log("createCookies method")
-            const out_sessID = currentRequestHeadersHashed(JSON.stringify(headers), secret)
+          console.log("createCookies method")
+            debugger; 
+          const out_sessID = currentRequestHeadersHashed(JSON.stringify(headers), secret)
+          console.log("out_sessID")
             const msga = new Msg(Math.floor(Date.now() / 1000), 'crypto', 'admin', 'Create token', headers[':path'], true, 'action')
           //  crypto_worker.postMessage(msga.toJSON())
-
+          console.log("msga")
             const workerResponse = await new Promise((resolve, reject) => {
                 const listener = (response) => {
                     resolve(response);
@@ -78,8 +81,10 @@ const crypto_worker = new Worker('./crypto_worker.js');
                 crypto_worker.on('message', listener);
                 crypto_worker.postMessage(msga.toJSON());
             });
+          console.log("workerResponse")
           //   console.log('Worker responded:', workerResponse);
-             const out_token = workerResponse
+          const out_token = workerResponse
+          console.log("out_token")
            // const out_token = jwt.sign(headers, secret, { expiresIn: '30m' })
             const out_cookies = [
                 sees_cookie_name + '=' + `${out_sessID}; Max-Age=${cookie_maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`,
