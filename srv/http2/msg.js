@@ -1,9 +1,9 @@
 import { parentPort } from 'node:worker_threads';
 
 class Msg {
-    #time;
-    #type;
-    #isAction;
+    #time
+    #type
+    #isAction
     #user
     #action
     #data
@@ -24,9 +24,9 @@ class Msg {
      action() { return this.#action; }
      user() { return this.#user; }   
      data() { return this.#data; }   
-    message() { return this.#message; }
+     message() { return this.#message; }
 
-    send() {
+     send() {
       
         if (typeof parentPort !== 'undefined' && parentPort) {
             // Worker Thread
@@ -60,7 +60,7 @@ class Msg {
             throw new TypeError('Invalid object for Msg.fromJSON');
         }
         const { time, type, user, message, data, isAction, action } = obj;
-        return new Msg(time, 'static', user, message, data, isAction, action);
+        return new Msg(time, type, user, message, data, isAction, action);
     }
 }
 

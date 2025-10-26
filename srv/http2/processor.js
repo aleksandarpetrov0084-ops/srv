@@ -39,14 +39,10 @@ export default class Processor {
                 } catch (err) {
                     console.warn('Cannot send result, channel closed:', err.message);
                 }
-            } else {
-             //   console.warn('No messaging interface available. Result:', this.#result);
+            } else {           
             }
-      //  });
     }
-    enque(msg) {
-        this.#msgs.enqueue(msg)
-    }    
+    
     getName() {
         return this.#name
     }
@@ -56,15 +52,9 @@ export default class Processor {
                 if (!this.#msgs.isEmpty()) {
                     const item = this.#msgs.dequeue();
                     const m = Msg.fromJSON(item)
-                   // console.log(this.#name, 'is calling async do() for', item)
                     await this.do(item)    
                     await this.#sendResult()
-                    //  this.#result = null;
-                   // const now = new Date();
-                   // console.log(now); // Example: 2025-10-21T18:42:12.345Z
-                   // console.log(process.memoryUsage())
                 } else {
-                    // Wait 1 second if msgs is empty
                     await new Promise(resolve => setTimeout(resolve, 1500));
                 }
             } while (this.#running);

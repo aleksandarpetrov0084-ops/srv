@@ -2,10 +2,11 @@
 import http2 from 'node:http2';
 import { currentRequestHeadersHashed, getHttpsOptions, getCookie, tokenMatch } from './http2_helper.js';
 import Msg from './msg.js';
+import jwt from 'jsonwebtoken';
 // @ts-nocheck
-import { Worker } from 'node:worker_threads';
-
-const crypto_worker = new Worker('./crypto_worker.js');
+//import { Worker } from 'node:worker_threads';
+//const crypto_worker = new Worker('./crypto_worker.js');
+import { fork } from 'child_process';
 
 (async () => {
     const httpsOptions = await getHttpsOptions()
@@ -18,6 +19,12 @@ const crypto_worker = new Worker('./crypto_worker.js');
     const IDtoken_cookie_name = 'IDtoken123' //token cookie name
     const AuthToken_cookie_name = 'AuthToken123' //token cookie name
     const cookie_maxAge = 30 * 60 // seconds
+
+    const crypto_worker = fork('./crypto_worker.js');
+    console.log('Process ID - ./crypto_worker.js', crypto_worker.pid)
+
+    const db_worker = fork('./db_worker.js');
+    console.log('Process ID - ./db_worker.js', db_worker.pid)
 
     server.on('stream', async (stream, headers) => {
         function Route(h) {
@@ -38,27 +45,33 @@ const crypto_worker = new Worker('./crypto_worker.js');
                     return;;
             }
         }
-        function processCookies(c) {
-           // console.log("processCookies method")
+      async  function processCookies(c) {
+            console.log("http2_worker processCookies() method")
             const in_sessID = getCookie(c || '', sees_cookie_name);
             const in_token = getCookie(c || '', IDtoken_cookie_name);
             const in_AuthToken = getCookie(c || '', AuthToken_cookie_name);
             if (!in_token || !in_sessID || !in_AuthToken) {
+                //Missing cookie workflow
                 const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Missing cookies', headers[':path'], true, 'action')      
                 msg.send()  
                 stream.end(JSON.stringify(headers['cookie']))
                 return;
             } else {
                 if (active_sessions[in_sessID] && tokenMatch(in_token, getCookie(JSON.stringify(active_sessions[in_sessID]), IDtoken_cookie_name))) {
-                    // If exist test
-                    const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'In acive sessions', headers[':path'], true, 'action')
-                    msg.send()  
-                   // console.log('Expiration (exp) claim:', jwt.decode(in_token.toString('utf8')).exp)
-                    console.log('Current Time (UTC):', Math.floor(Date.now() / 1000))
+                //Not missing cookie and in active session 
+                    const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'DB1_In acive sessions', headers[':path'], true, 'action')
+                    const db_worker_response = await new Promise((resolve, reject) => {
+                        db_worker.once('message', resolve);
+                        db_worker.send(msg.toJSON());
+                    });
+                    const db_response = db_worker_response 
+                    const in_token_time = jwt.decode(in_token.toString('utf8')).exp         
+                   //You have to stream.end 
                 } else {              
-
+                //Has cookies but not active
                     const msg = new Msg(Math.floor(Date.now() / 1000), 'type', 'admin', 'Has cookies and not in acive sessions', headers[':path'], true, 'action')
                     msg.send() 
+                //you have to stream.end
                 }
                 stream.end(JSON.stringify(headers['cookie']))
                 return;
@@ -66,26 +79,21 @@ const crypto_worker = new Worker('./crypto_worker.js');
         }
 
       async  function createCookies() {
-          console.log("createCookies method")
-            debugger; 
+          console.log("http2_worker createCookies() method")
           const out_sessID = currentRequestHeadersHashed(JSON.stringify(headers), secret)
-          console.log("out_sessID")
-            const msga = new Msg(Math.floor(Date.now() / 1000), 'crypto', 'admin', 'Create token', headers[':path'], true, 'action')
-          //  crypto_worker.postMessage(msga.toJSON())
-          console.log("msga")
-            const workerResponse = await new Promise((resolve, reject) => {
-                const listener = (response) => {
-                    resolve(response);
-                    crypto_worker.off('message', listener); // remove listener to avoid memory leaks
-                };
-                crypto_worker.on('message', listener);
-                crypto_worker.postMessage(msga.toJSON());
-            });
-          console.log("workerResponse")
-          //   console.log('Worker responded:', workerResponse);
+          if (out_sessID) {
+              console.log("out_sessID", out_sessID)
+          }
+          const msga = new Msg(Math.floor(Date.now() / 1000), 'crypto', 'admin', 'Create token', headers[':path'], true, 'action')
+
+          const workerResponse = await new Promise((resolve, reject) => {
+              crypto_worker.once('message', resolve);
+              crypto_worker.send(msga.toJSON());
+          });
+          
           const out_token = workerResponse
           console.log("out_token")
-           // const out_token = jwt.sign(headers, secret, { expiresIn: '30m' })
+
             const out_cookies = [
                 sees_cookie_name + '=' + `${out_sessID}; Max-Age=${cookie_maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`,
                 IDtoken_cookie_name + '=' + `${out_token}; Max-Age=${cookie_maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`,
@@ -112,4 +120,3 @@ const crypto_worker = new Worker('./crypto_worker.js');
         console.log('HTTP/2 server running on port 443');
     })
 })()
-
